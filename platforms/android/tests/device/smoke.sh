@@ -326,6 +326,14 @@ fi
 # ---- 验收：失败记下后继续，只有上面 record_failure 列出的情况才停 ----
 check "System input acceptance failed" MSIME_DEVICE_SMOKE_PASSED run_instrumentation app.msime.android.test/app.msime.android.test.DeviceSmoke
 [[ ${#failures[@]} -eq 0 ]] || stop "the system input path failed, and every later check types through the same keyboard"
+if [[ "${MSIME_EXP_QUICK_DELETE:-}" == 1 ]]; then
+check "Input failure category acceptance failed" MSIME_DEVICE_SMOKE_PASSED run_instrumentation app.msime.android.test/app.msime.android.test.InputFailureCategoryDeviceSmoke
+for round in 1 2 3 4 5 6 7 8; do
+  consecutive_failures=0
+  check "Quick delete undo acceptance failed (round $round)" MSIME_DEVICE_SMOKE_PASSED run_instrumentation app.msime.android.test/app.msime.android.test.QuickDeleteUndoDeviceSmoke
+done
+finish "experiment: input failure category and quick delete undo rounds"
+fi
 check "自定义双拼保存与输入验收失败" MSIME_DEVICE_SMOKE_PASSED run_instrumentation app.msime.android.test/app.msime.android.test.SettingsDeviceSmoke -e shuangpin-custom true
 check "社区皮肤完整照片传输验收失败" MSIME_SKIN_DOWNLOAD_STREAM_PASSED run_instrumentation app.msime.android.test/app.msime.android.test.AccountStorageDeviceSmoke -e skin-download true
 if [[ "$spelling_editor" == true ]]; then

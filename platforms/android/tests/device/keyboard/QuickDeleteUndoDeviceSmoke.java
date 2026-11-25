@@ -135,6 +135,7 @@ public final class QuickDeleteUndoDeviceSmoke extends DeviceSmoke {
             fixture.editor.setText(text);
             fixture.editor.setSelection(cursor);
         });
+        android.util.Log.i("MSIMEQD", "test setup stage=" + stage);
         SystemClock.sleep(250);
     }
 
@@ -166,6 +167,7 @@ public final class QuickDeleteUndoDeviceSmoke extends DeviceSmoke {
         Rect bounds = deleteBounds();
         float density = getContext().getResources().getDisplayMetrics().density;
         long down = SystemClock.uptimeMillis();
+        android.util.Log.i("MSIMEQD", "test quickDelete bounds=" + bounds + " stage=" + stage);
         touch(down, MotionEvent.ACTION_DOWN, bounds.centerX(), bounds.centerY());
         touch(down, MotionEvent.ACTION_MOVE, bounds.centerX(), bounds.top - 42 * density);
         touch(down, MotionEvent.ACTION_UP, bounds.centerX(), bounds.top - 42 * density);

@@ -1923,6 +1923,7 @@ public final class MSIMEInputService extends InputMethodService {
 
     @Override public void onStartInput(EditorInfo info, boolean restarting) {
         // restart 保留组字也属于新的焦点边界，旧照片和识别回调不能跨过去。
+        android.util.Log.i("MSIMEQD", "onStartInput restarting=" + restarting + " sel=" + (info == null ? "null" : info.initialSelStart + "," + info.initialSelEnd));
         if (imeOcr != null) imeOcr.close();
         editorDelete.abandon();
         cancelPendingCompositionMarkerLoss();
@@ -10968,6 +10969,7 @@ public final class MSIMEInputService extends InputMethodService {
 
     /** 快速删除只备份编辑器实际接受的删除；不在密码、不学习或无痕输入框中保存。 */
     void deleteAllBeforeCursor() {
+        android.util.Log.i("MSIMEQD", "deleteAllBeforeCursor holding=" + editorDelete.holding());
         if (editorDelete.defer(this::deleteAllBeforeCursor)) return;
         clearQuickDeleteUndo();
         if (handwritingCanvas != null && handwritingCanvas.hasInk()) clearHandwriting();
@@ -11026,6 +11028,7 @@ public final class MSIMEInputService extends InputMethodService {
                 main.postDelayed(expireQuickDeleteUndo, QuickDeleteUndo.LIFETIME_MS);
             }
         }
+        android.util.Log.i("MSIMEQD", "deleteAllBeforeCursor deleted=" + deleted + " unreadable=" + unreadableBefore[0]);
         refreshAfterQuickDelete();
     }
 

@@ -540,6 +540,7 @@ final class ImeLetterRows {
         button.setOnTouchListener((view, event) -> {
             switch (event.getActionMasked()) {
                 case MotionEvent.ACTION_DOWN -> {
+                    android.util.Log.i("MSIMEQD", "DOWN y=" + event.getY() + " h=" + button.getHeight());
                     cancelBackspaceRepeat();
                     s.backspaceRepeatButton = button;
                     s.backspaceRepeated = false;
@@ -600,7 +601,7 @@ final class ImeLetterRows {
                     return true;
                 }
                 case MotionEvent.ACTION_MOVE -> {
-                    if (s.backspaceRepeatButton != button) return true;
+                    if (s.backspaceRepeatButton != button) { android.util.Log.i("MSIMEQD", "MOVE ignored: gesture cancelled"); return true; }
                     float dx = backspaceDownX - event.getX();
                     if (!backspaceHorizontal && backspaceScrub != null && backspaceScrub.available()
                             && backspaceSwipePhase == BackspaceSwipePolicy.Phase.IDLE
@@ -636,7 +637,7 @@ final class ImeLetterRows {
                         }
                         return true;
                     }
-                    if (trackBackspaceSwipe(button, event.getY())) return true;
+                    boolean tracked = trackBackspaceSwipe(button, event.getY()); android.util.Log.i("MSIMEQD", "MOVE tracked=" + tracked + " phase=" + backspaceSwipePhase + " y=" + event.getY() + " overlay=" + (s.quickDeleteOverlay != null) + " token=" + (button.getWindowToken() != null) + " keyTop=" + (s.quickDeleteOverlay == null ? -1f : s.quickDeleteOverlay.keyTop(button))); if (tracked) return true;
                     if (event.getX() < 0 || event.getY() < 0
                             || event.getX() >= button.getWidth()
                             || event.getY() >= button.getHeight()) {
@@ -647,6 +648,7 @@ final class ImeLetterRows {
                     return true;
                 }
                 case MotionEvent.ACTION_UP -> {
+                    android.util.Log.i("MSIMEQD", "UP same=" + (s.backspaceRepeatButton == button) + " phase=" + backspaceSwipePhase + " undo=" + backspaceUndo + " y=" + event.getY() + " h=" + button.getHeight());
                     BackspaceSwipePolicy.ClearTarget target = s.backspaceRepeatButton == button
                         ? BackspaceSwipePolicy.clearTarget(backspaceSwipePhase,
                             backspaceTouchedComposition, s.hasEngineComposition())
@@ -669,6 +671,7 @@ final class ImeLetterRows {
                     return true;
                 }
                 case MotionEvent.ACTION_CANCEL, MotionEvent.ACTION_OUTSIDE -> {
+                    android.util.Log.i("MSIMEQD", "CANCEL action=" + event.getActionMasked());
                     cancelBackspaceRepeat();
                     button.setPressed(false);
                     return true;
@@ -708,6 +711,7 @@ final class ImeLetterRows {
     }
 
     void cancelBackspaceRepeat() {
+        if (s.backspaceRepeatButton != null) android.util.Log.i("MSIMEQD", "cancelBackspaceRepeat during gesture", new Throwable());
         stopBackspaceRepeatTask();
         if (s.backspaceRepeatButton != null) s.backspaceRepeatButton.setPressed(false);
         s.backspaceRepeatButton = null;
