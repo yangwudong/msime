@@ -536,11 +536,44 @@ final class ImeLetterRows {
     /**
      * 短按删一次，按住连删并逐级加速；左滑锁定水平删除，未松手时右滑恢复（#9324）。上下滑仍提供快速删除（#5585）与撤回（#8325），方向一旦锁定就不切换。
      */
+    static String qdGeometry(android.view.View v) {
+        StringBuilder b = new StringBuilder();
+        int[] at = new int[2];
+        v.getLocationOnScreen(at);
+        b.append("key@").append(at[1]).append(" ");
+        android.view.View child = v;
+        android.view.ViewParent parent = v.getParent();
+        int depth = 0;
+        while (parent instanceof android.view.ViewGroup group && depth < 14) {
+            b.append("|").append(group.getClass().getSimpleName()).append("[");
+            for (int i = 0; i < group.getChildCount(); i++) {
+                android.view.View c = group.getChildAt(i);
+                if (c.getVisibility() == android.view.View.GONE) continue;
+                b.append(c == child ? "*" : "").append(c.getClass().getSimpleName()).append(":").append(c.getTop()).append("+").append(c.getHeight()).append(",");
+            }
+            b.append("]");
+            child = group;
+            parent = group.getParent();
+            depth++;
+        }
+        return b.toString();
+    }
+
     void bindBackspaceRepeat(Button button, Runnable action) {
+        button.addOnLayoutChangeListener((view, l, t, r, bt, ol, ot, or, ob) -> android.util.Log.i("MSIMEQD", "LAYOUT " + qdGeometry(view)));
+        button.getViewTreeObserver().addOnGlobalLayoutListener(() -> {
+            int[] at = new int[2];
+            button.getLocationOnScreen(at);
+            Object last = button.getTag(0x7f7f0001);
+            if (last == null || (int) last != at[1]) {
+                button.setTag(0x7f7f0001, at[1]);
+                if (button.isAttachedToWindow() && button.isShown()) android.util.Log.i("MSIMEQD", "MOVED " + qdGeometry(button));
+            }
+        });
         button.setOnTouchListener((view, event) -> {
             switch (event.getActionMasked()) {
                 case MotionEvent.ACTION_DOWN -> {
-                    android.util.Log.i("MSIMEQD", "DOWN y=" + event.getY() + " h=" + button.getHeight());
+                    android.util.Log.i("MSIMEQD", "DOWN y=" + event.getY() + " h=" + button.getHeight() + " " + qdGeometry(button));
                     cancelBackspaceRepeat();
                     s.backspaceRepeatButton = button;
                     s.backspaceRepeated = false;
@@ -648,7 +681,7 @@ final class ImeLetterRows {
                     return true;
                 }
                 case MotionEvent.ACTION_UP -> {
-                    android.util.Log.i("MSIMEQD", "UP same=" + (s.backspaceRepeatButton == button) + " phase=" + backspaceSwipePhase + " undo=" + backspaceUndo + " y=" + event.getY() + " h=" + button.getHeight());
+                    android.util.Log.i("MSIMEQD", qdGeometry(button) + " UP same=" + (s.backspaceRepeatButton == button) + " phase=" + backspaceSwipePhase + " undo=" + backspaceUndo + " y=" + event.getY() + " h=" + button.getHeight());
                     BackspaceSwipePolicy.ClearTarget target = s.backspaceRepeatButton == button
                         ? BackspaceSwipePolicy.clearTarget(backspaceSwipePhase,
                             backspaceTouchedComposition, s.hasEngineComposition())
